@@ -385,11 +385,15 @@ async fn delete_of_someone_not_there() {
 }
 
 #[test]
-fn api_key_from_the_environment() {
-    // The only test that touches LYSTOK_API_KEY.
-    unsafe { std::env::remove_var("LYSTOK_API_KEY") };
-    assert_eq!(Lystok::from_env().unwrap_err().code(), "missing_api_key");
-    unsafe { std::env::set_var("LYSTOK_API_KEY", "lk_live_from_env") };
-    assert!(Lystok::from_env().is_ok());
-    unsafe { std::env::remove_var("LYSTOK_API_KEY") };
+fn refuses_an_empty_api_key() {
+    for key in ["", "   "] {
+        let err = Lystok::builder().api_key(key).build().unwrap_err();
+        assert_eq!(err.code(), "missing_api_key");
+    }
+    // Without .api_key() there is no key at all: the environment is never read.
+    assert_eq!(
+        Lystok::builder().build().unwrap_err().code(),
+        "missing_api_key"
+    );
+    assert!(std::panic::catch_unwind(|| Lystok::new("")).is_err());
 }

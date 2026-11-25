@@ -33,7 +33,7 @@ fn live() -> Option<Live> {
         eprintln!("skipped: set LYSTOK_LIVE=1 to run");
         return None;
     }
-    let mut builder = Lystok::builder();
+    let mut builder = Lystok::builder().api_key(std::env::var("LYSTOK_API_KEY").unwrap());
     if let Ok(url) = std::env::var("LYSTOK_BASE_URL") {
         builder = builder.base_url(url);
     }

@@ -21,7 +21,7 @@ const USER_AGENT_VALUE: &str = concat!("lystok-rust/", env!("CARGO_PKG_VERSION")
 /// # async fn run() -> Result<(), lystok::Error> {
 /// use lystok::{Lystok, SendEmailParams};
 ///
-/// let lystok = Lystok::from_env()?; // reads LYSTOK_API_KEY
+/// let lystok = Lystok::new(std::env::var("LYSTOK_API_KEY").expect("LYSTOK_API_KEY"));
 /// let email = lystok
 ///     .emails()
 ///     .send(&SendEmailParams::new("Shop <orders@shop.example>", "olena@example.com")
@@ -89,7 +89,7 @@ pub struct LystokBuilder {
 }
 
 impl LystokBuilder {
-    /// An API key from Settings → For developers; `LYSTOK_API_KEY` when not given.
+    /// An API key from Settings → For developers (`lk_live_…`). Required.
     pub fn api_key(mut self, api_key: impl Into<String>) -> Self {
         self.api_key = Some(api_key.into());
         self
@@ -120,17 +120,16 @@ impl LystokBuilder {
         self
     }
 
-    /// Fails with code `missing_api_key` when no key is given and `LYSTOK_API_KEY` is not set.
+    /// Fails with code `missing_api_key` when no key was given or it is empty.
     pub fn build(self) -> Result<Lystok, Error> {
         let api_key = self
             .api_key
-            .or_else(|| std::env::var("LYSTOK_API_KEY").ok())
-            .filter(|k| !k.is_empty())
+            .filter(|k| !k.trim().is_empty())
             .ok_or_else(|| {
                 Error::new(
                     0,
                     "missing_api_key",
-                    "Missing API key: pass it to Lystok::new(\"lk_live_...\") or set LYSTOK_API_KEY",
+                    "Missing API key: pass your Lystok API key (lk_live_…) to Lystok::new or .api_key()",
                 )
             })?;
         let http = match self.http {
@@ -157,22 +156,22 @@ impl LystokBuilder {
 }
 
 impl Lystok {
-    /// A client with this API key and the default settings.
+    /// A client with this API key (`lk_live_…`, from Settings → For developers) and the default
+    /// settings. Read the key from wherever you keep secrets: the library never looks at the
+    /// environment. Use [`Lystok::builder`] to get an error instead of a panic.
     ///
     /// # Panics
     /// When the key is empty, or the system's TLS cannot be set up.
     pub fn new(api_key: impl Into<String>) -> Self {
         let api_key = api_key.into();
-        assert!(!api_key.is_empty(), "Missing API key");
+        assert!(
+            !api_key.trim().is_empty(),
+            "Missing API key: pass your Lystok API key (lk_live_…) to Lystok::new"
+        );
         Self::builder()
             .api_key(api_key)
             .build()
             .expect("could not set up the Lystok client")
-    }
-
-    /// A client with the key in `LYSTOK_API_KEY`.
-    pub fn from_env() -> Result<Self, Error> {
-        Self::builder().build()
     }
 
     pub fn builder() -> LystokBuilder {

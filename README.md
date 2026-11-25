@@ -15,7 +15,7 @@ Create an API key in Lystok → Settings → For developers, and verify your sen
 ```rust
 use lystok::{Lystok, SendEmailParams};
 
-let lystok = Lystok::from_env()?; // reads LYSTOK_API_KEY
+let lystok = Lystok::new(std::env::var("LYSTOK_API_KEY")?);
 
 let email = lystok
     .emails()
@@ -26,8 +26,10 @@ let email = lystok
 println!("{}", email.id);
 ```
 
-`Lystok::new("lk_live_…")` takes the key directly. Keys belong on your server: never put one in a
-browser or a mobile app. The client is cheap to clone; clones share one connection pool.
+The key is always passed in: keep it wherever you keep secrets, under any name (`LYSTOK_API_KEY`
+above is only an example); the library never reads the environment itself. `Lystok::new` panics on
+an empty key; `Lystok::builder().api_key(…).build()` returns an error instead. Keys belong on your
+server: never put one in a browser or a mobile app. The client is cheap to clone; clones share one connection pool.
 
 ### With a template
 
@@ -159,9 +161,10 @@ Network errors, timeouts, `429` and `5xx` are tried again twice, waiting a littl
 use std::time::Duration;
 
 let lystok = Lystok::builder()
+    .api_key(std::env::var("LYSTOK_API_KEY")?)
     .max_retries(4)
     .timeout(Duration::from_secs(10))
-    .build()?; // the key from LYSTOK_API_KEY, or .api_key("lk_live_…")
+    .build()?;
 
 lystok.emails().get_with(&id, RequestOptions::default().timeout(Duration::from_secs(5))).await?;
 ```

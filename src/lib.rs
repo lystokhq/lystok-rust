@@ -5,7 +5,7 @@
 //! # async fn run() -> Result<(), lystok::Error> {
 //! use lystok::{Lystok, SendEmailParams};
 //!
-//! let lystok = Lystok::from_env()?; // reads LYSTOK_API_KEY
+//! let lystok = Lystok::new(std::env::var("LYSTOK_API_KEY").expect("LYSTOK_API_KEY"));
 //! let email = lystok
 //!     .emails()
 //!     .send(&SendEmailParams::new("Shop <orders@shop.example>", "olena@example.com")
