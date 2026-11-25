@@ -1,0 +1,28 @@
+[package]
+name = "lystok"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+description = "The official Rust library for the Lystok email API: send email, keep contacts in step, check webhooks."
+license = "MIT"
+repository = "https://github.com/lystokhq/lystok-rust"
+homepage = "https://lystok.com"
+documentation = "https://docs.rs/lystok"
+readme = "README.md"
+keywords = ["lystok", "email", "transactional", "webhooks", "api"]
+categories = ["email", "api-bindings", "web-programming::http-client"]
+exclude = ["/.github", "/tests"]
+
+[dependencies]
+base64 = "0.22"
+hmac = "0.12"
+http = "1"
+reqwest = { version = "0.13", default-features = false, features = ["rustls"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+tokio = { version = "1", features = ["time"] }
+uuid = { version = "1", features = ["v4"] }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["io-util", "macros", "net", "rt-multi-thread", "sync", "time"] }
